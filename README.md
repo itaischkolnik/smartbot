@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SmartBot - WhatsApp Chatbot Platform
 
-## Getting Started
+A web-based platform for creating and managing WhatsApp chatbots powered by OpenAI's API and GreenAPI for WhatsApp integration.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend/Backend**: Next.js (with API routes)
+- **Authentication**: Google OAuth 2.0
+- **AI Engine**: OpenAI API
+- **Database**: Supabase (PostgreSQL)
+- **WhatsApp Integration**: GreenAPI
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Google Cloud Console account (for OAuth)
+- OpenAI API key
+- Supabase account and project
+- GreenAPI account
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# Authentication
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET=""
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
+
+# OpenAI
+OPENAI_API_KEY=""
+
+# GreenAPI (WhatsApp)
+GREENAPI_INSTANCE_ID=""
+GREENAPI_API_TOKEN=""
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup Instructions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables in `.env.local`
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features
 
-## Learn More
+- User authentication via Google
+- Dashboard to create and configure chatbots
+- WhatsApp integration via GreenAPI
+- Persistent storage of chatbot configurations
+- Conversation history tracking
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/              # Next.js 13+ App Router
+│   ├── api/         # API routes
+│   └── auth/        # Authentication routes
+├── components/       # React components
+├── lib/             # Library code
+├── types/           # TypeScript types
+└── utils/           # Utility functions
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
