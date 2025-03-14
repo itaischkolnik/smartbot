@@ -18,6 +18,9 @@ export default function ConnectWhatsAppPage() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [user, setUser] = useState<{ id: string } | null>(null);
+  const [instanceId, setInstanceId] = useState('')
+  const [token, setToken] = useState('')
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -173,6 +176,49 @@ export default function ConnectWhatsAppPage() {
     }
   };
 
+  const handleConnect = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      // Test the GreenAPI connection
+      const response = await fetch('/api/whatsapp/test-connection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instanceId,
+          token
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to connect to WhatsApp. Please check your credentials.')
+      }
+
+      // Save the credentials
+      const { error: updateError } = await supabase
+        .from('chatbots')
+        .update({
+          greenapi_instance_id: instanceId,
+          greenapi_token: token,
+          whatsapp_status: 'connected'
+        })
+        .eq('id', params.id)
+
+      if (updateError) {
+        throw updateError
+      }
+
+      setSuccess(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#141414] p-8">
       <div className="max-w-4xl mx-auto">
@@ -254,6 +300,75 @@ export default function ConnectWhatsAppPage() {
                 </button>
               </div>
             )}
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                Successfully connected to WhatsApp!
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Connect using Green API</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="instanceId" className="block text-sm font-medium text-gray-700">
+                Instance ID
+              </label>
+              <input
+                type="text"
+                id="instanceId"
+                value={instanceId}
+                onChange={(e) => setInstanceId(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                placeholder="Enter your Green API Instance ID"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="token" className="block text-sm font-medium text-gray-700">
+                API Token
+              </label>
+              <input
+                type="password"
+                id="token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                placeholder="Enter your Green API Token"
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleConnect}
+              disabled={isLoading || !instanceId || !token}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                isLoading || !instanceId || !token
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+              }`}
+            >
+              {isLoading ? 'Connecting...' : 'Connect WhatsApp'}
+            </button>
+
+            <div className="mt-4 text-sm text-gray-600">
+              <h3 className="font-medium mb-2">How to get your Green API credentials:</h3>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Go to <a href="https://green-api.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">green-api.com</a></li>
+                <li>Sign up or log in to your account</li>
+                <li>Create a new instance or select an existing one</li>
+                <li>Copy your Instance ID and API Token</li>
+                <li>Paste them in the fields above and click Connect</li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>

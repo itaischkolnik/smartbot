@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/lib/database.types';
 
@@ -27,179 +28,85 @@ function Alert({ message, onClose }: AlertProps) {
   );
 }
 
-type WhatsAppSettingsProps = {
+interface WhatsAppSettingsProps {
   botId: string;
-  userId: string;
+  whatsappStatus: string | null;
   greenApiInstanceId: string | null;
-  greenApiInstanceToken: string | null;
-  onUpdate: () => void;
-};
+}
 
-export default function WhatsAppSettings({
-  botId,
-  userId,
-  greenApiInstanceId,
-  greenApiInstanceToken,
-  onUpdate,
-}: WhatsAppSettingsProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function WhatsAppSettings({ botId, whatsappStatus, greenApiInstanceId }: WhatsAppSettingsProps) {
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    greenapi_instance_id: greenApiInstanceId || '',
-    greenapi_instance_token: greenApiInstanceToken || '',
-  });
   const supabase = createClientComponentClient<Database>();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
+  const handleDisconnect = async () => {
+    setIsDisconnecting(true);
     try {
-      // First, try to update only if both values are provided
-      if (formData.greenapi_instance_id && formData.greenapi_instance_token) {
-        const { error: updateError } = await supabase
-          .from('chatbots')
-          .update({
-            greenapi_instance_id: formData.greenapi_instance_id,
-            greenapi_instance_token: formData.greenapi_instance_token,
-          })
-          .eq('id', botId);
+      const { error } = await supabase
+        .from('chatbots')
+        .update({
+          whatsapp_status: 'disconnected',
+          greenapi_instance_id: null,
+          greenapi_token: null
+        })
+        .eq('id', botId);
 
-        if (updateError) {
-          // If update fails, try to update one field at a time
-          const { error: idError } = await supabase
-            .from('chatbots')
-            .update({ greenapi_instance_id: formData.greenapi_instance_id })
-            .eq('id', botId);
-
-          if (idError) throw idError;
-
-          const { error: tokenError } = await supabase
-            .from('chatbots')
-            .update({ greenapi_instance_token: formData.greenapi_instance_token })
-            .eq('id', botId);
-
-          if (tokenError) throw tokenError;
-        }
-      }
-
-      onUpdate();
-    } catch (err) {
-      console.error('Error updating WhatsApp settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update WhatsApp settings');
+      if (error) throw error;
+      
+      // Reload the page to reflect changes
+      window.location.reload();
+    } catch (error) {
+      console.error('Error disconnecting WhatsApp:', error);
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleTestConnection = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/whatsapp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          botId,
-          userId,
-          action: 'getState',
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || data.details || 'Failed to test connection');
-      }
-
-      const data = await response.json();
-      setAlert('Connection successful! Current state: ' + data.status);
-    } catch (err) {
-      console.error('Error testing connection:', err);
-      setError(err instanceof Error ? err.message : 'Failed to test connection');
-    } finally {
-      setIsLoading(false);
+      setIsDisconnecting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {alert && <Alert message={alert} onClose={() => setAlert(null)} />}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="greenapi_instance_id" className="block text-gray-400 mb-2">
-            GreenAPI Instance ID
-          </label>
-          <input
-            type="text"
-            id="greenapi_instance_id"
-            name="greenapi_instance_id"
-            value={formData.greenapi_instance_id}
-            onChange={handleInputChange}
-            className="w-full bg-[#2A2A2A] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#25D366]"
-            placeholder="Enter your GreenAPI Instance ID"
-          />
+    <div className="bg-white shadow sm:rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <h3 className="text-lg font-medium leading-6 text-gray-900">WhatsApp Connection</h3>
+        
+        <div className="mt-3 max-w-xl text-sm text-gray-500">
+          <p>
+            {whatsappStatus === 'connected'
+              ? `Connected to WhatsApp using Green API (Instance ID: ${greenApiInstanceId})`
+              : 'Connect your bot to WhatsApp to start receiving and responding to messages.'}
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="greenapi_instance_token" className="block text-gray-400 mb-2">
-            GreenAPI Token
-          </label>
-          <input
-            type="password"
-            id="greenapi_instance_token"
-            name="greenapi_instance_token"
-            value={formData.greenapi_instance_token}
-            onChange={handleInputChange}
-            className="w-full bg-[#2A2A2A] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#25D366]"
-            placeholder="Enter your GreenAPI Token"
-          />
+        <div className="mt-5">
+          {whatsappStatus === 'connected' ? (
+            <button
+              type="button"
+              onClick={handleDisconnect}
+              disabled={isDisconnecting}
+              className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 font-medium text-red-700 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:text-sm"
+            >
+              {isDisconnecting ? 'Disconnecting...' : 'Disconnect WhatsApp'}
+            </button>
+          ) : (
+            <Link
+              href={`/dashboard/bot/${botId}/connect`}
+              className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
+            >
+              Connect WhatsApp
+            </Link>
+          )}
         </div>
 
-        {error && (
-          <div className="text-red-500 text-sm">
-            {error}
+        {whatsappStatus !== 'connected' && (
+          <div className="mt-6">
+            <h4 className="text-sm font-medium text-gray-900">To connect your bot to WhatsApp:</h4>
+            <ul className="mt-3 list-disc list-inside text-sm text-gray-500 space-y-2">
+              <li>Click the "Connect WhatsApp" button above</li>
+              <li>Sign up for a Green API account if you haven't already</li>
+              <li>Create a new instance and get your credentials</li>
+              <li>Enter your Green API Instance ID and Token</li>
+              <li>Start using your WhatsApp-enabled bot!</li>
+            </ul>
           </div>
         )}
-
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-[#25D366] hover:bg-[#1fa855] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {isLoading ? 'Saving...' : 'Save Settings'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTestConnection}
-            disabled={isLoading || !formData.greenapi_instance_id || !formData.greenapi_instance_token}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {isLoading ? 'Testing...' : 'Test Connection'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6 border-t border-gray-700 pt-6">
-        <h3 className="text-lg font-medium text-white mb-4">Connection Instructions</h3>
-        <ol className="list-decimal list-inside space-y-2 text-gray-400">
-          <li>Enter your GreenAPI Instance ID and Token from your GreenAPI dashboard</li>
-          <li>Click "Save Settings" to store your credentials</li>
-          <li>Click "Test Connection" to verify your credentials work</li>
-          <li>Use the "Connect WhatsApp" button at the top to scan the QR code and start using your bot</li>
-        </ol>
       </div>
     </div>
   );

@@ -11,43 +11,37 @@ export interface Database {
     Tables: {
       chatbots: {
         Row: {
-          id: string
           created_at: string
-          user_id: string
+          description: string | null
+          id: string
           name: string
-          company: string | null
-          language: string
-          prompt: string
-          whatsapp_number: string
+          owner_id: string
+          system_prompt: string | null
+          whatsapp_status: string | null
           greenapi_instance_id: string | null
-          whatsapp_status: 'disconnected' | 'connected' | 'awaiting_scan' | 'authenticated' | 'auth_failed' | null
-          whatsapp_qr: string | null
+          greenapi_token: string | null
         }
         Insert: {
-          id?: string
           created_at?: string
-          user_id: string
+          description?: string | null
+          id?: string
           name: string
-          company?: string | null
-          language: string
-          prompt: string
-          whatsapp_number: string
+          owner_id: string
+          system_prompt?: string | null
+          whatsapp_status?: string | null
           greenapi_instance_id?: string | null
-          whatsapp_status?: 'disconnected' | 'connected' | 'awaiting_scan' | 'authenticated' | 'auth_failed' | null
-          whatsapp_qr?: string | null
+          greenapi_token?: string | null
         }
         Update: {
-          id?: string
           created_at?: string
-          user_id?: string
+          description?: string | null
+          id?: string
           name?: string
-          company?: string | null
-          language?: string
-          prompt?: string
-          whatsapp_number?: string
+          owner_id?: string
+          system_prompt?: string | null
+          whatsapp_status?: string | null
           greenapi_instance_id?: string | null
-          whatsapp_status?: 'disconnected' | 'connected' | 'awaiting_scan' | 'authenticated' | 'auth_failed' | null
-          whatsapp_qr?: string | null
+          greenapi_token?: string | null
         }
       }
       users: {
@@ -78,6 +72,9 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }
