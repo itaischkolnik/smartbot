@@ -36,7 +36,6 @@ interface WhatsAppSettingsProps {
 
 export default function WhatsAppSettings({ botId, whatsappStatus, greenApiInstanceId }: WhatsAppSettingsProps) {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
-  const [alert, setAlert] = useState<string | null>(null);
   const supabase = createClientComponentClient<Database>();
 
   const handleDisconnect = async () => {

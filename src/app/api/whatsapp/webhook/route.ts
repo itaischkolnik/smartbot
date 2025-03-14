@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { greenAPI } from '@/lib/greenapi';
 
-export async function POST(request: Request) {
+export async function POST(
+  req: Request,
+  { params }: { params: Record<string, string> }
+): Promise<Response> {
   try {
-    const body = await request.json();
+    const body = await req.json();
 
     // Verify this is a message notification
     if (
@@ -30,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     // Get chatbot response from OpenAI
-    const chatResponse = await fetch(`${request.url.split('/whatsapp')[0]}/chat`, {
+    const chatResponse = await fetch(`${req.url.split('/whatsapp')[0]}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

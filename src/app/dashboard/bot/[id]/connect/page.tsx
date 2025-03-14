@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/lib/database.types';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ConnectWhatsAppPage() {
   const router = useRouter();
@@ -248,7 +249,13 @@ export default function ConnectWhatsAppPage() {
                   Open WhatsApp on your phone and scan this QR code to connect your bot
                 </p>
                 <div className="inline-block p-4 bg-white rounded-lg">
-                  <img src={qrCode} alt="WhatsApp QR Code" className="max-w-[300px]" />
+                  <Image 
+                    src={qrCode} 
+                    alt="WhatsApp QR Code" 
+                    width={300} 
+                    height={300}
+                    className="max-w-[300px]" 
+                  />
                 </div>
               </div>
             )}

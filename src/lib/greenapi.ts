@@ -1,9 +1,18 @@
 import axios from 'axios';
 
+const GREENAPI_BASE_URL = 'https://api.green-api.com';
+
 export type GreenAPIConfig = {
   idInstance: string;
   apiTokenInstance: string;
 };
+
+interface GreenAPIResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  data?: unknown;
+}
 
 export class GreenAPIClient {
   private baseUrl: string;
@@ -58,4 +67,36 @@ export class GreenAPIClient {
 export const greenAPI = new GreenAPIClient({
   idInstance: process.env.GREENAPI_INSTANCE_ID!,
   apiTokenInstance: process.env.GREENAPI_API_TOKEN!,
-}); 
+});
+
+export async function sendMessage(
+  instanceId: string,
+  token: string,
+  chatId: string,
+  message: string
+): Promise<GreenAPIResponse> {
+  try {
+    const response = await fetch(`${GREENAPI_BASE_URL}/waInstance${instanceId}/sendMessage/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chatId: `${chatId}@c.us`,
+        message
+      })
+    });
+
+    const data = await response.json();
+    return {
+      success: response.ok,
+      data,
+      message: response.ok ? 'Message sent successfully' : 'Failed to send message'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send message'
+    };
+  }
+} 

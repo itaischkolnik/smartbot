@@ -8,9 +8,20 @@ export const dynamic = 'force-dynamic';
 
 const GREENAPI_BASE_URL = 'https://api.green-api.com';
 
+interface WhatsAppResponse {
+  status: string;
+  qrCode?: string;
+  error?: string;
+  details?: string;
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await req.json() as {
+      botId: string;
+      userId: string;
+      action: 'getState' | 'qrCode' | 'logout';
+    };
     const { botId, userId, action } = body;
     
     if (!botId || !userId || !action) {
