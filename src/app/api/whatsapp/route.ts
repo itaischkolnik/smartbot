@@ -15,7 +15,12 @@ interface WhatsAppResponse {
   details?: string;
 }
 
-export async function POST(req: Request) {
+interface ErrorResponse {
+  error: string;
+  details?: string;
+}
+
+export async function POST(req: Request): Promise<Response> {
   try {
     const body = await req.json() as {
       botId: string;
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
     const { botId, userId, action } = body;
     
     if (!botId || !userId || !action) {
-      return NextResponse.json(
+      return NextResponse.json<ErrorResponse>(
         { error: 'Missing required parameters' },
         { status: 400 }
       );
@@ -68,10 +73,11 @@ export async function POST(req: Request) {
         }
 
         const data = await response.json();
-        return NextResponse.json({ status: data.stateInstance });
-      } catch (error: any) {
-        return NextResponse.json(
-          { error: 'Failed to get state', details: error.message },
+        return NextResponse.json<WhatsAppResponse>({ status: data.stateInstance });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to get state';
+        return NextResponse.json<ErrorResponse>(
+          { error: 'Failed to get state', details: errorMessage },
           { status: 500 }
         );
       }
@@ -130,9 +136,10 @@ export async function POST(req: Request) {
       { error: 'Invalid action' },
       { status: 400 }
     );
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json<ErrorResponse>(
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

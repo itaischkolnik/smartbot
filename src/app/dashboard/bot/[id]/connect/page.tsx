@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/lib/database.types';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function ConnectWhatsAppPage() {
-  const router = useRouter();
   const params = useParams();
   const botId = params.id as string;
   const { data: session } = useSession();
