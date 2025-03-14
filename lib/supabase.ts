@@ -1,14 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
-}
-
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
-}
-
 // Type definitions for our database tables
 export type User = {
   id: string;
@@ -39,7 +31,7 @@ export type Conversation = {
 
 // Create a Supabase client for server components
 export function createClient() {
-  const cookieStore = cookies();
+  const cookieStore = cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,26 +39,25 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
-          const cookie = cookieStore.get(name);
-          return cookie?.value;
+          return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, options)
           } catch (error) {
             // Handle cookie error
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.delete(name);
+            cookieStore.delete(name)
           } catch (error) {
             // Handle cookie error
           }
         },
       },
     }
-  );
+  )
 }
 
 // Verify database connection
