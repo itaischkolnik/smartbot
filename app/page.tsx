@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = 'force-static';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#111111] p-8">
@@ -52,9 +54,12 @@ export default function Home() {
             >
               Get Started
             </Link>
-            <button className="px-8 py-4 bg-[#1a1a1a] hover:bg-[#252525] text-white font-bold rounded-lg border border-[#25D366]/20 transform transition hover:scale-105">
+            <Link
+              href="#features"
+              className="px-8 py-4 bg-[#1a1a1a] hover:bg-[#252525] text-white font-bold rounded-lg border border-[#25D366]/20 transform transition hover:scale-105"
+            >
               Learn More
-            </button>
+            </Link>
           </div>
         </div>
       </div>

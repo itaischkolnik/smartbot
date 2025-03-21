@@ -21,11 +21,15 @@ export default function LoginPage() {
       console.log('Starting Google sign-in process...');
       const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard';
       
+      console.log('Callback URL:', callbackUrl);
+      console.log('Current URL:', window.location.href);
+      
       const result = await signIn('google', {
         callbackUrl,
-        redirect: false
+        redirect: true
       });
 
+      // Note: The code below might not execute due to redirect: true
       console.log('Sign-in result:', result);
       
       if (result?.error) {
@@ -35,6 +39,8 @@ export default function LoginPage() {
             ? 'Failed to start Google sign-in. Please try again.'
             : result.error === 'AccessDenied'
             ? 'Access was denied. Please make sure you are using an authorized Google account.'
+            : result.error === 'Configuration'
+            ? 'There is a problem with the server configuration. Please try again later.'
             : `Authentication error: ${result.error}`
         );
       } else if (result?.url) {
@@ -78,7 +84,13 @@ export default function LoginPage() {
             className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-lg px-6 py-4 font-medium hover:bg-[#1fa855] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <span>Loading...</span>
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Connecting to Google...</span>
+              </div>
             ) : (
               <>
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
