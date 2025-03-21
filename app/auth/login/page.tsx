@@ -2,9 +2,9 @@
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 
-function LoginContent() {
+export default function LoginPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState<string | null>(() => {
@@ -127,17 +127,5 @@ function LoginContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#111111] flex items-center justify-center">
-        <div className="text-[#25D366]">Loading...</div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 } 
