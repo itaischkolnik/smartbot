@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["fra1"],
-  "env": {
-    "NEXTAUTH_URL": "https://getsmartbot.io"
+  "buildCommand": "npm run build",
+  "ignoreCommand": "exit 0",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
   }
 } 
