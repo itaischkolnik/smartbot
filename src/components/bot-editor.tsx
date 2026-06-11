@@ -14,6 +14,7 @@ export function BotEditor({ bot, appUrl }: { bot: Chatbot; appUrl: string }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("Details")
   const [provider, setProvider] = useState(bot.provider)
+  const [aiEnabled, setAiEnabled] = useState(bot.ai_enabled)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const caps = (bot.capabilities ?? {}) as BotCapabilities
@@ -121,53 +122,85 @@ export function BotEditor({ bot, appUrl }: { bot: Chatbot; appUrl: string }) {
 
         {/* BOT SETTINGS */}
         <Section show={tab === "Bot Settings"}>
-          <Toggle name="ai_enabled" label="AI replies enabled (off = canned greeting only)" defaultChecked={bot.ai_enabled} />
-          <Row>
-            <Field label="AI Provider">
-              <select
-                name="provider"
-                value={provider}
-                onChange={(e) => setProvider(e.target.value)}
-              >
-                {PROVIDERS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
+          <Toggle
+            name="ai_enabled"
+            label="AI replies enabled (off = canned greeting / flow only)"
+            defaultChecked={bot.ai_enabled}
+            onChange={setAiEnabled}
+          />
+
+          {/* AI-only configuration — hidden (but still submitted) when AI is off */}
+          <div className={aiEnabled ? "space-y-5" : "hidden"}>
+            <Row>
+              <Field label="AI Provider">
+                <select
+                  name="provider"
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value)}
+                >
+                  {PROVIDERS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Model">
+                <select name="model" defaultValue={bot.model} key={provider}>
+                  {modelsFor(provider).map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </Row>
+            <Row>
+              <Field label="Temperature">
+                <input name="temperature" type="number" step="0.1" min="0" max="2" defaultValue={bot.temperature} />
+              </Field>
+              <Field label="Max tokens">
+                <input name="max_tokens" type="number" min="50" max="4000" defaultValue={bot.max_tokens} />
+              </Field>
+            </Row>
+            <div>
+              <p className="mb-2 text-sm text-muted">Capabilities</p>
+              <div className="space-y-2">
+                {CAPABILITIES.map((c) => (
+                  <Toggle
+                    key={c.key}
+                    name={`cap_${c.key}`}
+                    label={c.label}
+                    help={c.help}
+                    defaultChecked={Boolean(caps[c.key as keyof BotCapabilities])}
+                  />
                 ))}
-              </select>
-            </Field>
-            <Field label="Model">
-              <select name="model" defaultValue={bot.model} key={provider}>
-                {modelsFor(provider).map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </Row>
-          <Row>
-            <Field label="Temperature">
-              <input name="temperature" type="number" step="0.1" min="0" max="2" defaultValue={bot.temperature} />
-            </Field>
-            <Field label="Max tokens">
-              <input name="max_tokens" type="number" min="50" max="4000" defaultValue={bot.max_tokens} />
-            </Field>
-          </Row>
-          <div>
-            <p className="mb-2 text-sm text-muted">Capabilities</p>
-            <div className="space-y-2">
-              {CAPABILITIES.map((c) => (
-                <Toggle
-                  key={c.key}
-                  name={`cap_${c.key}`}
-                  label={c.label}
-                  help={c.help}
-                  defaultChecked={Boolean(caps[c.key as keyof BotCapabilities])}
-                />
-              ))}
+              </div>
             </div>
           </div>
+
+          {/* When AI is off, point the user to where the non-AI behavior lives */}
+          {!aiEnabled && (
+            <p className="text-sm text-muted">
+              AI replies are off. This bot will use the{" "}
+              <button
+                type="button"
+                onClick={() => setTab("Flow")}
+                className="text-brand hover:underline"
+              >
+                Flow
+              </button>{" "}
+              if one is defined, otherwise the canned greeting from the{" "}
+              <button
+                type="button"
+                onClick={() => setTab("Prompts")}
+                className="text-brand hover:underline"
+              >
+                Prompts
+              </button>{" "}
+              tab.
+            </p>
+          )}
         </Section>
 
         {/* PROMPTS */}
@@ -252,11 +285,13 @@ function Toggle({
   label,
   help,
   defaultChecked,
+  onChange,
 }: {
   name: string
   label: string
   help?: string
   defaultChecked?: boolean
+  onChange?: (checked: boolean) => void
 }) {
   return (
     <label className="flex cursor-pointer items-start rounded-lg border border-border bg-surface-2 p-3">
@@ -264,6 +299,7 @@ function Toggle({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
+        onChange={(e) => onChange?.(e.target.checked)}
         className="mt-0.5 h-4 w-auto shrink-0 accent-[var(--brand)]"
       />
       <span>
