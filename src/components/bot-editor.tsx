@@ -67,7 +67,7 @@ export function BotEditor({ bot, appUrl }: { bot: Chatbot; appUrl: string }) {
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-sm transition-colors ${
+            className={`-mb-px cursor-pointer border-b-2 px-4 py-2.5 text-sm transition-colors ${
               tab === t
                 ? "border-brand text-brand"
                 : "border-transparent text-muted hover:text-foreground"
@@ -318,6 +318,7 @@ function CopyBox({ label, value }: { label: string; value: string }) {
         <Button
           type="button"
           variant="ghost"
+          className="cursor-pointer"
           onClick={() => navigator.clipboard?.writeText(value)}
         >
           Copy
